@@ -22,10 +22,12 @@ cd spark-history-server/docker
 Build the Docker image using the provided Dockerfile:
 
 ```bash
-docker build -t spark-history-server:latest .
+docker build --build-arg spark_version=<spark-version> -t spark-history-server:latest .
 ```
 
 > Note: You can replace `spark-history-server:latest` with your preferred image name and tag.
+
+> Note: The `spark_version` build argument allows you to specify the Spark version (e.g., `3.5.7`, `4.1.0`, etc.).
 
 ### 3. Push to Registry (Optional)
 
@@ -96,7 +98,7 @@ To update to a newer version:
 git pull
 
 # Rebuild the image
-docker build -t spark-history-server:latest .
+docker build --build-arg spark_version=<spark-version> -t spark-history-server:latest .
 ```
 
 ## 🧹 Cleanup

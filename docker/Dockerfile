@@ -20,10 +20,11 @@ COPY pom.xml /tmp
 
 # Download the Apache Spark binary (without Hadoop) to allow for custom Hadoop integrations
 # Unpack Spark into /opt/spark, which is the conventional install path
-RUN curl -o ./spark-3.5.1-bin-without-hadoop.tgz https://archive.apache.org/dist/spark/spark-3.5.1/spark-3.5.1-bin-without-hadoop.tgz && \
-    tar -xzf spark-3.5.1-bin-without-hadoop.tgz && \
-    mv spark-3.5.1-bin-without-hadoop /opt/spark && \
-    rm spark-3.5.1-bin-without-hadoop.tgz
+ARG spark_version
+RUN curl -o ./spark-${spark_version}-bin-without-hadoop.tgz https://archive.apache.org/dist/spark/spark-${spark_version}/spark-${spark_version}-bin-without-hadoop.tgz && \
+    tar -xzf spark-${spark_version}-bin-without-hadoop.tgz && \
+    mv spark-${spark_version}-bin-without-hadoop /opt/spark && \
+    rm spark-${spark_version}-bin-without-hadoop.tgz
 
 # Use Maven to resolve and copy all runtime dependencies from the pom.xml
 # into Spark's JAR directory. This ensures S3/Hadoop/AWS SDK integration.

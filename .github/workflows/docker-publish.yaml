@@ -16,10 +16,15 @@ on:
 
 env:
   IMAGE_NAME: spark-history-server
+  LATEST_SPARK_VERSION: 4.1.0
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        spark_version: [ 3.5.7, 4.0.1, 4.1.0 ]
 
     permissions:
       contents: read
@@ -66,7 +71,7 @@ jobs:
         env:
           GHCR_USER: ${{ steps.repo.outputs.owner }}
           IMAGE: ${{ env.IMAGE_NAME }}
-          TAG: ${{ steps.extract_version.outputs.VERSION }}
+          TAG: ${{ steps.extract_version.outputs.VERSION }}_spark${{ matrix.spark_version }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "🔍 Checking for ghcr.io/${GHCR_USER}/${IMAGE}:${TAG}"
@@ -92,8 +97,24 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ghcr.io/${{ steps.repo.outputs.owner }}/${{ env.IMAGE_NAME }}:${{ steps.extract_version.outputs.VERSION }}
-            ghcr.io/${{ steps.repo.outputs.owner }}/${{ env.IMAGE_NAME }}:latest
+            ghcr.io/${{ steps.repo.outputs.owner }}/${{ env.IMAGE_NAME }}:${{ steps.extract_version.outputs.VERSION }}_spark${{ matrix.spark_version }}
+          build-args: |
+            spark_version=${{ matrix.spark_version }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.version=${{ steps.extract_version.outputs.VERSION }}
+            org.opencontainers.image.version=${{ steps.extract_version.outputs.VERSION }}_spark${{ matrix.spark_version }}
+
+      - name: Tag image as latest (only for LATEST_SPARK_VERSION)
+        if: matrix.spark_version == env.LATEST_SPARK_VERSION
+        uses: docker/build-push-action@v5
+        with:
+          context: ./docker
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ghcr.io/${{ steps.repo.outputs.owner }}/${{ env.IMAGE_NAME }}:latest
+          build-args: |
+            spark_version=${{ matrix.spark_version }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.version=${{ steps.extract_version.outputs.VERSION }}_spark${{ matrix.spark_version }}
